@@ -10,11 +10,11 @@ import BooksList from './pages/books/BooksList';
 import BookView from './pages/books/BookView';
 import AddBook from './pages/books/AddBook';
 import AddRating from './pages/ratings/AddRating';
-import TestDrive from './pages/testdrives/TestDrive';
 import AddUser from './pages/users/AddUser';
 import User from './pages/users/User';
 import UsersList from './pages/users/UsersList';
 import BookRatings from './pages/ratings/BookRatings';
+import Rating from './pages/ratings/Rating';
 
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
         <Route exact path="/catalog/new" element={<AddBook />}></Route>
         <Route exact path="/catalog/:bookId/ratings" element={<BookRatings />}></Route>
         <Route exact path="/rating/new/:bookId" element={<AddRating/>}></Route>
-        <Route exact path="/rating/:ratingId" element={<TestDrive />}></Route>
+        <Route exact path="/rating/:ratingId" element={<Rating />}></Route>
         <Route exact path="/users/new" element={<AddUser />}></Route>
         <Route exact path="/users/:userId" element={<User />}></Route>
         <Route exact path="/users" element={<UsersList />}></Route>

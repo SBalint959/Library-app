@@ -9,81 +9,41 @@ function BooksList() {
 
     const [search, setSearch] = useState("")
 
-    // const [books, setBooks] = useState([])
+    const [books, setBooks] = useState([])
+    
+    const [expandedBook, setExpandedBook] = useState(null);
 
-    const books = {
-        1: {
-            bookId: 1,
-            bookTitle: "To Kill a Mockingbird",
-            bookauthor: "Harper Lee",
-            genre: { genreName: "Fiction" },
-            publicationyear: 1960,
-            isbn: "978-0-06-112008-4"
-        },
-        2: {
-            bookId: 2,
-            bookTitle: "1984",
-            bookauthor: "George Orwell",
-            genre: { genreName: "Dystopian" },
-            publicationyear: 1949,
-            isbn: "978-0-452-28423-4"
-        },
-        3: {
-            bookId: 3,
-            bookTitle: "Moby Dick",
-            bookauthor: "Herman Melville",
-            genre: { genreName: "Adventure" },
-            publicationyear: 1851,
-            isbn: "978-0-14-243724-7"
-        },
-        4: {
-            bookId: 4,
-            bookTitle: "Pride and Prejudice",
-            bookauthor: "Jane Austen",
-            genre: { genreName: "Romance" },
-            publicationyear: 1813,
-            isbn: "978-0-19-953556-9"
-        },
-        5: {
-            bookId: 5,
-            bookTitle: "The Great Gatsby",
-            bookauthor: "F. Scott Fitzgerald",
-            genre: { genreName: "Tragedy" },
-            publicationyear: 1925,
-            isbn: "978-0-7432-7356-5"
+    const getBooks = async () => {
+        try {
+            const response = await fetch("http://localhost:3000/api/books",
+                {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Accept": "application/vnd.api+json",
+                        "Content-Type": "application/vnd.api+json"
+
+                    }
+                });
+            let jsonData = await response.json();
+            // console.log("Books:")
+            // console.log(jsonData);
+            setBooks(jsonData.data);
+            // console.log(books);
+
+        } catch (e) {
+            console.log(e)
         }
-    };
-
-    // const getBooks = async () => {
-    //     try {
-    //         const response = await fetch("http://localhost:8080/api/books",
-    //             {
-    //                 method: "GET",
-    //                 mode: "cors",
-    //                 headers: {
-    //                     "Content-type": "application/json"
-    //                 }
-    //             });
-    //         let jsonData = await response.json();
-    //         console.log(jsonData);
-    //         setBooks(jsonData)
-
-    //     } catch (e) {
-    //         console.log(e)
-    //     }
-    // }
-
-    // const searchBooks = (inputString) => {
-    //     setSearch(books.filter((book) => book.booktitle.toLowerCase().includes(inputString)))
-    // }
+    }
+    
 
     //Dev search
     const searchBooks = (query) => {
         if (query === "") {
             setSearch(null);
         } else {
-            const filteredBooks = Object.values(books).filter(book =>
-                book.bookTitle.toLowerCase().includes(query.toLowerCase())
+            const filteredBooks = books.filter(book =>
+                book.attributes.title.toLowerCase().includes(query.toLowerCase())
             );
             setSearch(filteredBooks);
         }
@@ -108,12 +68,21 @@ function BooksList() {
         }
     }
 
-    // useEffect(() => {
-    //     getBooks();
-    // }, []);
+    const toggleExpand = (bookId) => {
+        setExpandedBook(expandedBook === bookId ? null : bookId);
+    };
+
+    useEffect(() => {
+        getBooks();
+    }, []);
+
+    useEffect(() => {
+        console.log("Books (state):", books);
+    }, [books]);
 
     return (
         <>
+        
             <MDBCol style={{
                 margin: "auto",
                 width: "50%"
@@ -126,44 +95,57 @@ function BooksList() {
             </MDBCol>
             <Row xs={1} md={5} className="g-4">
                 {!search ? <>{Object.values(books).map((book) => {
+                    const { id, attributes } = book;
+                    const { title, author, genres, isbn, created_at, updated_at, average_rating, number_of_copies, pages } = attributes;
+                    const genreNames = genres.map(genre => genre.name).join(', ');
+                    const authorName = `${author.first_name} ${author.last_name}`;
+                    const isExpanded = expandedBook === id;
                     return (<>
-                        <Col>
-                            <Card style={{ width: '18rem' }}>
+                        <Col key={id}>
+                            <Card style={{ width: '18rem' }} onClick={() => toggleExpand(id)}>
                                 <Card.Body>
-                                    <Card.Title>{book.bookTitle}</Card.Title>
-                                    <Card.Subtitle>{book.bookauthor}</Card.Subtitle>
-                                    <Card.Text>
-                                        Žanr: {book.genre.genreName}
-                                    </Card.Text>
-                                    <Card.Text>
-                                        Godina publikacije: {book.publicationyear} god.
-                                    </Card.Text>
-                                    <Card.Text>
-                                        ISBN: {book.isbn}
-                                    </Card.Text>
-                                    <Button variant="warning" className="me-2" href={"/catalog/" + book.bookId}>Uredi</Button>
-                                    <Button variant="danger" onClick={() => deleteBook(book.bookId)}>Obriši</Button>
+                                    <Card.Title>{title}</Card.Title>
+                                    <Card.Subtitle>{authorName}</Card.Subtitle>
+                                    {isExpanded && (
+                                        <>
+                                            <Card.Text>Genre: {genreNames}</Card.Text>
+                                            <Card.Text>Publication Date: {new Date(created_at).getFullYear()}</Card.Text>
+                                            <Card.Text>ISBN: {isbn}</Card.Text>
+                                            <Card.Text>Rating: {average_rating}</Card.Text>
+                                            <Card.Text>Copies: {number_of_copies}</Card.Text>
+                                            <Card.Text>Pages: {pages}</Card.Text>
+                                            <Button variant="primary" className="me-2" href={"/catalog/" + id + "/ratings"}>Ratings</Button>
+                                            <Button variant="warning" className="me-2" href={"/catalog/" + id}>Edit</Button>
+                                            <Button variant="danger" onClick={(e) => { e.stopPropagation(); deleteBook(id); }}>Delete</Button>
+                                        </>
+                                    )}
                                 </Card.Body>
                             </Card>
                         </Col></>)
                 })}</> : <>{Object.values(search).map((book) => {
+                    const { id, attributes } = book;
+                    const { title, author, genres, isbn, created_at, updated_at, average_rating, number_of_copies, pages } = attributes;
+                    const genreNames = genres.map(genre => genre.name).join(', ');
+                    const authorName = `${author.first_name} ${author.last_name}`;
+                    const isExpanded = expandedBook === id;
                     return (<>
-                        <Col>
-                            <Card style={{ width: '18rem' }}>
+                        <Col key={id}>
+                            <Card style={{ width: '18rem' }} onClick={() => toggleExpand(id)}>
                                 <Card.Body>
-                                    <Card.Title>{book.bookTitle}</Card.Title>
-                                    <Card.Subtitle>{book.bookauthor}</Card.Subtitle>
-                                    <Card.Text>
-                                        Žanr: {book.genre.genreName}
-                                    </Card.Text>
-                                    <Card.Text>
-                                        Godina publikacije: {book.publicationyear} god.
-                                    </Card.Text>
-                                    <Card.Text>
-                                        ISBN: {book.isbn}
-                                    </Card.Text>
-                                    <Button variant="warning" className="me-2" href={"/catalog/" + book.bookId}>Uredi</Button>
-                                    <Button variant="danger" onClick={() => deleteBook(book.bookId)}>Obriši</Button>
+                                    <Card.Title>{title}</Card.Title>
+                                    <Card.Subtitle>{authorName}</Card.Subtitle>
+                                    {isExpanded && (
+                                        <>
+                                            <Card.Text>Genre: {genreNames}</Card.Text>
+                                            <Card.Text>Publication Date: {new Date(created_at).getFullYear()}</Card.Text>
+                                            <Card.Text>ISBN: {isbn}</Card.Text>
+                                            <Card.Text>Rating: {average_rating}</Card.Text>
+                                            <Card.Text>Copies: {number_of_copies}</Card.Text>
+                                            <Card.Text>Pages: {pages}</Card.Text>
+                                            <Button variant="warning" className="me-2" href={"/catalog/" + id}>Edit</Button>
+                                            <Button variant="danger" onClick={(e) => { e.stopPropagation(); deleteBook(id); }}>Delete</Button>
+                                        </>
+                                    )}
                                 </Card.Body>
                             </Card>
                         </Col></>)

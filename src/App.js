@@ -10,11 +10,11 @@ import BooksList from './pages/books/BooksList';
 import BookView from './pages/books/BookView';
 import AddBook from './pages/books/AddBook';
 import AddRating from './pages/ratings/AddRating';
-import AddUser from './pages/users/AddUser';
-import User from './pages/users/User';
-import UsersList from './pages/users/UsersList';
+import AddAuthor from './pages/authors/AddAuthor';
 import BookRatings from './pages/ratings/BookRatings';
 import Rating from './pages/ratings/Rating';
+import AuthorsList from './pages/authors/AuthorsList';
+import AuthorEdit from './pages/authors/AuthorEdit';
 
 
 function App() {
@@ -30,9 +30,9 @@ function App() {
         <Route exact path="/catalog/:bookId/ratings" element={<BookRatings />}></Route>
         <Route exact path="/rating/new/:bookId" element={<AddRating/>}></Route>
         <Route exact path="/rating/:ratingId" element={<Rating />}></Route>
-        <Route exact path="/users/new" element={<AddUser />}></Route>
-        <Route exact path="/users/:userId" element={<User />}></Route>
-        <Route exact path="/users" element={<UsersList />}></Route>
+        <Route exact path="/authors/new" element={<AddAuthor />}></Route>
+        <Route exact path="/authors/:authorId" element={<AuthorEdit />}></Route>
+        <Route exact path="/authors" element={<AuthorsList />}></Route>
       </Routes>
     </BrowserRouter>
   );

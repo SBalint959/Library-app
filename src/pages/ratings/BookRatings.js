@@ -91,6 +91,7 @@ function BookRatings() {
                         </Card.Body>
                     </Card>
                 ))}
+                <Button variant="primary" href={"/rating/new/" + bookId}>Add new rating</Button>
             </Col>
         </Row>
         </>

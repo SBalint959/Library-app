@@ -109,7 +109,6 @@ function BooksList() {
                                     {isExpanded && (
                                         <>
                                             <Card.Text>Genre: {genreNames}</Card.Text>
-                                            <Card.Text>Publication Date: {new Date(created_at).getFullYear()}</Card.Text>
                                             <Card.Text>ISBN: {isbn}</Card.Text>
                                             <Card.Text>Rating: {average_rating}</Card.Text>
                                             <Card.Text>Copies: {number_of_copies}</Card.Text>
@@ -137,7 +136,6 @@ function BooksList() {
                                     {isExpanded && (
                                         <>
                                             <Card.Text>Genre: {genreNames}</Card.Text>
-                                            <Card.Text>Publication Date: {new Date(created_at).getFullYear()}</Card.Text>
                                             <Card.Text>ISBN: {isbn}</Card.Text>
                                             <Card.Text>Rating: {average_rating}</Card.Text>
                                             <Card.Text>Copies: {number_of_copies}</Card.Text>

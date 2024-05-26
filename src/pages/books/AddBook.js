@@ -10,9 +10,8 @@ const AddBook = () => {
     const [book, setBook] = useState({
         title: '',
         isbn: '',
-        publication_year: '',
         number_of_copies: '',
-        number_of_pages: '',
+        pages: '',
         genres: []
     });
     const [alert, setAlert] = useState(null);
@@ -68,21 +67,37 @@ const AddBook = () => {
     const onGenreChange = (e) => {
         const selectedGenres = Array.from(e.target.selectedOptions, option => option.value);
         setBook({ ...book, genres: selectedGenres });
+        console.log(selectedGenres)
     };
 
     const addBook = async () => {
         try {
-            const selectedGenres = genres.filter(genre => book.genres.includes(genre.attributes.name));
-            const genreIds = selectedGenres.map(genre => genre.id);
+            const genreIds = genres
+                .filter(genre => book.genres.includes(genre.attributes.name))
+                .map(genre => ({ type: 'genres', id: genre.id }));
+
             const body = {
-                title: book.title,
-                author_id: selectedAuthor, // Use the selected author's ID
-                isbn: book.isbn,
-                publication_year: book.publication_year,
-                number_of_copies: book.number_of_copies,
-                number_of_pages: book.number_of_pages,
-                genres: genreIds
-            };
+                type: "books",
+                attributes: {
+                    title: book.title,
+                    isbn: book.isbn,
+                    number_of_copies: book.number_of_copies,
+                    pages: book.pages,
+                    published_at: "2015-04-10",
+                },
+                relationships: {
+                    author: {
+                        data: {
+                            type: 'authors',
+                            id: selectedAuthor
+                        }
+                    },
+                    genres: {
+                        data: genreIds
+                    }
+                }
+            }; 
+            console.log(body)
 
             const bookResponse = await fetch("http://localhost:3000/api/books", {
                 method: 'POST',
@@ -91,12 +106,13 @@ const AddBook = () => {
                     'Accept': 'application/vnd.api+json',
                     'Content-Type': 'application/vnd.api+json'
                 },
-                body: JSON.stringify({ data: { attributes: body } })
+                body: JSON.stringify({ data: body })
             });
 
             if (!bookResponse.ok) {
                 throw new Error('Failed to save book');
             }
+            
 
             const jsonData = await bookResponse.json();
             console.log(jsonData);
@@ -115,12 +131,12 @@ const AddBook = () => {
         <div style={{ margin: 'auto', width: '50%' }}>
             <h1>Dodavanje nove knjige</h1>
             {alert === "OK" && (
-                <Alert key="success" variant="success">
+                <Alert key="success" variant="success" role="good-alert">
                     Knjiga uspješno dodana!
                 </Alert>
             )}
             {alert === "ERROR" && (
-                <Alert key="danger" variant="danger">
+                <Alert key="danger" variant="danger" role="bad-alert">
                     Neispravno uneseni podaci! {invalidInputs.join(", ")}
                 </Alert>
             )}
@@ -158,7 +174,7 @@ const AddBook = () => {
                 <Form.Text id="passwordHelpBlock" muted>
                     Obavezan odabir.
                 </Form.Text>
-                <Form.Select aria-label="genre" name="genreNames" value={book.genreNames} onChange={e => onChange(e)} multiple>
+                <Form.Select aria-label="genres" name="genres" value={book.genres} onChange={onGenreChange} multiple>
                     <option>Odaberite žanr</option>
                     {genres.map((genre) => (
                         <option key={genre.id} value={genre.attributes.name}>{genre.attributes.name}</option>
@@ -166,7 +182,8 @@ const AddBook = () => {
                 </Form.Select>
                 <br />
                 <Form.Text id="passwordHelpBlock" muted>
-                    Obavezan unos.
+                    Obavezan unos. Mora biti duljine 10 ili 13.
+                    (048665088X, 9780743273565, 0-19-953556-6)
                 </Form.Text>
                 <InputGroup className="mb-3">
                     <InputGroup.Text id="basic-addon1">ISBN</InputGroup.Text>
@@ -179,17 +196,22 @@ const AddBook = () => {
                         value={book.isbn}
                     />
                 </InputGroup>
+                <br/>
                 <InputGroup className="mb-3">
                     <InputGroup.Text id="basic-addon1">Broj stranica</InputGroup.Text>
                     <Form.Control
                         placeholder="Broj stranica"
-                        aria-label="number_of_pages"
-                        name="number_of_pages"
+                        aria-label="pages"
+                        name="pages"
                         aria-describedby="basic-addon1"
                         onChange={onChange}
-                        value={book.number_of_pages}
+                        value={book.pages}
                     />
                 </InputGroup>
+                <br />
+                <Form.Text id="passwordHelpBlock" muted>
+                    Obavezan unos. Barem 2.
+                </Form.Text>
                 <InputGroup className="mb-3">
                     <InputGroup.Text id="basic-addon1">Broj primjeraka</InputGroup.Text>
                     <Form.Control

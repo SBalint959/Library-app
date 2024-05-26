@@ -57,7 +57,7 @@ function AuthorEdit() {
                     'Accept': 'application/vnd.api+json',
                     'Content-Type': 'application/vnd.api+json'
                 },
-                body: JSON.stringify({ data: { attributes: body } })
+                body: JSON.stringify({ data: {type: "author", attributes: body } })
             });
             const jsonData = await response.json();
 

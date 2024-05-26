@@ -27,8 +27,9 @@ function BookView() {
                     }
                 });
                 const jsonData = await response.json();
+                console.log(jsonData);
                 setBook(jsonData.data.attributes);
-                setSelectedAuthor(jsonData.data.attributes.author_id);
+                setSelectedAuthor(jsonData.data.attributes.author.id);
             } catch (e) {
                 console.log(e);
             }
@@ -74,29 +75,41 @@ function BookView() {
     }, [bookId]);
 
     const setBookData = async () => {
-        const selectedGenres = genres.filter(genre => book.genreNames.includes(genre.attributes.name));
-        const genreIds = selectedGenres.map(genre => genre.id);
+        const selectedGenres = genres.filter(genre => book.genres.includes(genre.attributes.name));
+        const genreIds = selectedGenres.map(genre =>  ({ type: 'genres', id: genre.id }));
 
         const bookBody = {
-            title: book.title,
-            author_id: selectedAuthor, // Use the selected author's ID
-            isbn: book.isbn,
-            publication_year: book.publication_year,
-            number_of_copies: book.number_of_copies,
-            number_of_pages: book.number_of_pages,
-            genres: genreIds
+            type: "books",
+                attributes: {
+                    title: book.title,
+                    isbn: book.isbn,
+                    number_of_copies: book.number_of_copies,
+                    pages: book.pages,
+                    published_at: "2015-04-10",
+                },
+                relationships: {
+                    author: {
+                        data: {
+                            type: 'authors',
+                            id: selectedAuthor
+                        }
+                    },
+                    genres: {
+                        data: genreIds
+                    }
+                }
         };
 
         try {
             // Update the book with the selected author ID
-            const bookResponse = await fetch(`http://localhost:3000/api/books/${bookId}`, {
+            const bookResponse = await fetch("http://localhost:3000/api/books/" + bookId, {
                 method: 'PATCH',
                 mode: 'cors',
                 headers: {
                     'Accept': 'application/vnd.api+json',
                     'Content-Type': 'application/vnd.api+json'
                 },
-                body: JSON.stringify({ data: { attributes: bookBody } })
+                body: JSON.stringify({ data: bookBody })
             });
 
             const bookJsonData = await bookResponse.json();
@@ -120,7 +133,8 @@ function BookView() {
                     method: 'DELETE',
                     mode: 'cors',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Accept': 'application/vnd.api+json',
+                        'Content-Type': 'application/vnd.api+json'
                     }
                 });
                 if (response.status === 204) {
@@ -137,6 +151,11 @@ function BookView() {
     const onChange = e => {
         const { name, value } = e.target;
         setBook({ ...book, [name]: value });
+    };
+
+    const onGenreChange = e => {
+        const selectedGenres = Array.from(e.target.selectedOptions, option => option.value);
+        setBook({ ...book, genres: selectedGenres });
     };
 
     return book ? (
@@ -186,7 +205,7 @@ function BookView() {
                 <Form.Text id="passwordHelpBlock" muted>
                     Obavezan odabir.
                 </Form.Text>
-                <Form.Select aria-label="genre" name="genreNames" value={book.genreNames} onChange={e => onChange(e)} multiple>
+                <Form.Select aria-label="genres" name="genres" value={book.genres} onChange={onGenreChange} multiple>
                     <option>Odaberite žanr</option>
                     {genres.map((genre) => (
                         <option key={genre.id} value={genre.attributes.name}>{genre.attributes.name}</option>
@@ -194,7 +213,8 @@ function BookView() {
                 </Form.Select>
                 <br />
                 <Form.Text id="passwordHelpBlock" muted>
-                    Obavezan unos.
+                    Obavezan unos. Mora biti duljine 10 ili 13.
+                    (048665088X, 9780743273565, 0-19-953556-6)
                 </Form.Text>
                 <InputGroup className="mb-3">
                     <InputGroup.Text id="basic-addon1">ISBN</InputGroup.Text>
@@ -207,17 +227,25 @@ function BookView() {
                         value={book.isbn}
                     />
                 </InputGroup>
+                <br />
+                <Form.Text id="passwordHelpBlock" muted>
+                    Obavezan unos.
+                </Form.Text>
                 <InputGroup className="mb-3">
                     <InputGroup.Text id="basic-addon1">Broj stranica</InputGroup.Text>
                     <Form.Control
                         placeholder="Broj stranica"
-                        aria-label="number_of_pages"
-                        name="number_of_pages"
+                        aria-label="pages"
+                        name="pages"
                         aria-describedby="basic-addon1"
                         onChange={onChange}
-                        value={book.number_of_pages}
+                        value={book.pages}
                     />
                 </InputGroup>
+                <br />
+                <Form.Text id="passwordHelpBlock" muted>
+                    Obavezan unos. Barem 2.
+                </Form.Text>
                 <InputGroup className="mb-3">
                     <InputGroup.Text id="basic-addon1">Broj primjeraka</InputGroup.Text>
                     <Form.Control

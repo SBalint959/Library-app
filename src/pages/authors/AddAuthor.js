@@ -35,13 +35,14 @@ function AddAuthor() {
                     'Accept': 'application/vnd.api+json',
                     'Content-Type': 'application/vnd.api+json'
                 },
-                body: JSON.stringify({ data: { attributes: body } })
+                body: JSON.stringify({ data: {type: "author", attributes: body } })
             });
+            console.log(body);
             const jsonData = await response.json();
 
             if (response.status === 201) {
                 setAlert("OK");
-                setTimeout(() => navigate("/authors"), 2000); // Redirect to authors list after 2 seconds
+                // setTimeout(() => navigate("/authors"), 2000); // Redirect to authors list after 2 seconds
             } else {
                 setAlert("ERROR");
                 setInvalidInputs(jsonData.errors.map(error => error.source.pointer.replace('/data/attributes/', '')));
@@ -56,12 +57,12 @@ function AddAuthor() {
         <div style={{ margin: 'auto', width: '50%' }}>
             <h1>Dodavanje novog autora</h1>
             {alert === "OK" && (
-                <Alert key="success" variant="success">
+                <Alert key="success" variant="success" role="good-alert">
                     Autor uspješno dodan!
                 </Alert>
             )}
             {alert === "ERROR" && (
-                <Alert key="danger" variant="danger">
+                <Alert key="danger" variant="danger" role="bad-alert">
                     Neispravno uneseni podaci! {invalidInputs.join(", ")}
                 </Alert>
             )}

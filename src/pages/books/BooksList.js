@@ -4,12 +4,18 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import { MDBCol, MDBIcon } from "mdbreact";
+import { useNavigate } from "react-router-dom";
+
+// Inside your component
+
 
 function BooksList() {
 
     const [search, setSearch] = useState("")
 
     const [books, setBooks] = useState([])
+
+    const navigate = useNavigate();
     
     const [expandedBook, setExpandedBook] = useState(null);
 
@@ -50,17 +56,26 @@ function BooksList() {
     };
 
     const deleteBook = async (bookId) => {
+        
         if (window.confirm("Jeste li sigurni da želite izbrisati knjigu: " + bookId)) {
             try {
-                const response = await fetch("http://localhost:8080/api/books/" + bookId,
+                const response = await fetch("http://localhost:3000/api/books/" + bookId,
                     {
                         method: "DELETE",
                         mode: "cors",
                         headers: {
-                            "Content-type": "application/json"
+                            'Accept': 'application/vnd.api+json',
+                            'Content-Type': 'application/vnd.api+json'
                         }
                     });
                 let jsonData = await response.json();
+                if (response.ok) {
+                    // Redirect to another route and then back to refresh the page
+                    // navigate("/temp"); // Navigate to a temporary route
+                    navigate("/catalog"); // Navigate back to the current route
+                } else {
+                    console.error("Failed to delete the book");
+                }
                 // getBooks()
             } catch (e) {
                 console.log(e)
@@ -110,7 +125,7 @@ function BooksList() {
                                         <>
                                             <Card.Text>Genre: {genreNames}</Card.Text>
                                             <Card.Text>ISBN: {isbn}</Card.Text>
-                                            <Card.Text>Rating: {average_rating}</Card.Text>
+                                            <Card.Text>Rating: {parseFloat(average_rating).toFixed(2)}</Card.Text>
                                             <Card.Text>Copies: {number_of_copies}</Card.Text>
                                             <Card.Text>Pages: {pages}</Card.Text>
                                             <Button variant="primary" className="me-2" href={"/catalog/" + id + "/ratings"}>Ratings</Button>

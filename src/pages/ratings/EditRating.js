@@ -1,14 +1,13 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 
-function AddRating() {
-    const { bookId } = useParams();
+function EditRating() {
+    const { ratingId } = useParams();
     const navigate = useNavigate();
-    const [book, setBook] = useState(null);
     const [rating, setRating] = useState({
         score: '',
         review: ''
@@ -17,9 +16,9 @@ function AddRating() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchBookData = async () => {
+        const fetchRatingData = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/api/books/${bookId}`, {
+                const response = await fetch(`http://localhost:3000/api/ratings/${ratingId}`, {
                     method: 'GET',
                     mode: 'cors',
                     headers: {
@@ -28,7 +27,7 @@ function AddRating() {
                     }
                 });
                 const jsonData = await response.json();
-                setBook(jsonData.data);
+                setRating(jsonData.data.attributes);
                 setLoading(false);
             } catch (e) {
                 console.log(e);
@@ -36,23 +35,22 @@ function AddRating() {
             }
         };
 
-        fetchBookData();
-    }, [bookId]);
+        fetchRatingData();
+    }, [ratingId]);
 
-    const addNewRating = async () => {
+    const updateRating = async () => {
         const body = {
             type: "ratings",
+            id: ratingId,
             attributes: {
                 score: rating.score,
                 review: rating.review,
-                user_id: "2",
-                book_id: bookId
-            },
+            }
         };
 
         try {
-            const response = await fetch("http://localhost:3000/api/ratings", {
-                method: 'POST',
+            const response = await fetch(`http://localhost:3000/api/ratings/${ratingId}`, {
+                method: 'PATCH',
                 mode: 'cors',
                 headers: {
                     'Accept': 'application/vnd.api+json',
@@ -62,9 +60,9 @@ function AddRating() {
             });
             const jsonData = await response.json();
 
-            if (response.status === 201) {
+            if (response.status === 200) {
                 setAlert("OK");
-                setTimeout(() => navigate(`/catalog/${bookId}/ratings`), 2000); // Redirect to the book page after 2 seconds
+                setTimeout(() => navigate(`/catalog`), 2000); // Redirect to the book ratings page after 2 seconds
             } else {
                 setAlert("ERROR");
             }
@@ -87,23 +85,18 @@ function AddRating() {
         return <div>Loading...</div>;
     }
 
-    if (!book) {
-        return <div>Error loading book data.</div>;
+    if (!rating) {
+        return <div>Error loading rating data.</div>;
     }
-
-    const { attributes } = book;
-    const { title, author, genres, isbn, created_at, average_rating, number_of_copies, pages, ratings } = attributes;
-    const genreNames = genres.map(genre => genre.name).join(', ');
-    const authorName = `${author.first_name} ${author.last_name}`;
 
     return (
         <>
             <br />
             <div style={{ margin: "auto", width: "50%" }}>
-                <h2>{title}</h2> {/* Display book title */}
+                <h2>Update Rating</h2>
                 {alert === "OK" && (
                     <Alert key="success" variant="success" role="good-alert">
-                        Recenzija uspješno dodana!
+                        Recenzija uspješno ažurirana!
                     </Alert>
                 )}
                 {alert === "ERROR" && (
@@ -129,6 +122,7 @@ function AddRating() {
                     aria-label="score"
                     name="score"
                     onChange={e => onSelectRatingGrade(e.target.value)}
+                    value={rating.score}
                 >
                     <option>Odaberite ocjenu</option>
                     {[1, 2, 3, 4, 5].map(grade => (
@@ -136,10 +130,10 @@ function AddRating() {
                     ))}
                 </Form.Select>
                 <br />
-                <Button variant="primary" onClick={addNewRating}>Dodaj novu recenziju</Button>
+                <Button variant="primary" onClick={updateRating}>Ažuriraj recenziju</Button>
             </div>
         </>
     );
 }
 
-export default AddRating;
+export default EditRating;

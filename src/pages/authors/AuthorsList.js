@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { MDBCol, MDBIcon } from "mdbreact";
 
 function AuthorsList() {
-
     const [authors, setAuthors] = useState([]);
+    const [search, setSearch] = useState('');
+    const [filteredAuthors, setFilteredAuthors] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -20,6 +22,7 @@ function AuthorsList() {
                 });
                 const jsonData = await response.json();
                 setAuthors(jsonData.data);
+                setFilteredAuthors(jsonData.data);
             } catch (e) {
                 console.log(e);
             }
@@ -28,6 +31,19 @@ function AuthorsList() {
         fetchAuthors();
     }, []);
 
+    const searchAuthors = (query) => {
+        setSearch(query);
+        if (query === "") {
+            setFilteredAuthors(authors);
+        } else {
+            const filtered = authors.filter(author =>
+                author.attributes.first_name.toLowerCase().includes(query.toLowerCase()) ||
+                author.attributes.last_name.toLowerCase().includes(query.toLowerCase())
+            );
+            setFilteredAuthors(filtered);
+        }
+    };
+
     const deleteAuthor = async (authorId) => {
         if (window.confirm("Jeste li sigurni da želite izbrisati autora: " + authorId + "?")) {
             try {
@@ -35,11 +51,13 @@ function AuthorsList() {
                     method: 'DELETE',
                     mode: 'cors',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Accept': 'application/vnd.api+json',
+                        'Content-Type': 'application/vnd.api+json'
                     }
                 });
                 if (response.status === 204) {
                     setAuthors(authors.filter(author => author.id !== authorId));
+                    setFilteredAuthors(filteredAuthors.filter(author => author.id !== authorId));
                 } else {
                     console.error("Failed to delete the author");
                 }
@@ -49,11 +67,22 @@ function AuthorsList() {
         }
     };
 
-  
-
     return (
         <div style={{ margin: 'auto', width: '80%' }}>
             <h1>Popis autora</h1>
+            <MDBCol style={{ margin: "auto", width: "50%" }}>
+                <form className="form-inline mt-4 mb-4">
+                    <MDBIcon icon="search" />
+                    <input
+                        className="form-control form-control-sm ml-3 w-99"
+                        type="text"
+                        placeholder="Pretraga po imenu ili prezimenu"
+                        aria-label="Search"
+                        onChange={e => searchAuthors(e.target.value)}
+                        value={search}
+                    />
+                </form>
+            </MDBCol>
             <Table striped bordered hover>
                 <thead>
                     <tr>
@@ -64,7 +93,7 @@ function AuthorsList() {
                     </tr>
                 </thead>
                 <tbody>
-                    {authors.map((author) => {
+                    {filteredAuthors.map((author) => {
                         return (
                             <tr key={author.id}>
                                 <td>{author.attributes.first_name}</td>

@@ -12,7 +12,7 @@ import AddBook from './pages/books/AddBook';
 import AddRating from './pages/ratings/AddRating';
 import AddAuthor from './pages/authors/AddAuthor';
 import BookRatings from './pages/ratings/BookRatings';
-import Rating from './pages/ratings/Rating';
+import EditRating from './pages/ratings/EditRating'
 import AuthorsList from './pages/authors/AuthorsList';
 import AuthorEdit from './pages/authors/AuthorEdit';
 
@@ -28,8 +28,8 @@ function App() {
         <Route exact path="/catalog/:bookId" element={<BookView />}></Route>
         <Route exact path="/catalog/new" element={<AddBook />}></Route>
         <Route exact path="/catalog/:bookId/ratings" element={<BookRatings />}></Route>
+        <Route exact path="/rating/:ratingId" element={<EditRating/>}></Route>
         <Route exact path="/rating/new/:bookId" element={<AddRating/>}></Route>
-        <Route exact path="/rating/:ratingId" element={<Rating />}></Route>
         <Route exact path="/authors/new" element={<AddAuthor />}></Route>
         <Route exact path="/authors/:authorId" element={<AuthorEdit />}></Route>
         <Route exact path="/authors" element={<AuthorsList />}></Route>
